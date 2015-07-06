@@ -21,6 +21,7 @@ public class CalculaCamino {
 	int contador=0;
 	private ColaConPrioridad cola = new ColaConPrioridad();
 	private Set<Punto> puntosVisitados = new HashSet<Punto>();
+	private Matriz matriz = new Matriz();
 	
 	public CalculaCamino(List<Punto> cmc, Camino camino) {
 		
@@ -48,7 +49,10 @@ public class CalculaCamino {
 		
 		Nodo primerElemento = cola.getPrimerElementoNoVisitado();
 		primerElemento.setNodoVisitado(true);
-		puntosVisitados.add(new Punto(primerElemento.getUbicacion().getX(), primerElemento.getUbicacion().getY()));
+		
+//		puntosVisitados.add(new Punto(primerElemento.getUbicacion().getX(), primerElemento.getUbicacion().getY()));
+		Punto punto = new Punto(primerElemento.getUbicacion().getX(), primerElemento.getUbicacion().getY());
+		matriz.marcarVisitado(punto);
 		neoNodo.setNodoAnterior(null);
 		primerElemento.setNodoAnterior(neoNodo);
 		
@@ -80,8 +84,9 @@ public class CalculaCamino {
 				
 			}
 			nodo = primerElementoNoVisitado;
-			puntosVisitados.add(new Punto(nodo.getUbicacion().getX(), nodo.getUbicacion().getY()));
-			
+//			puntosVisitados.add(new Punto(nodo.getUbicacion().getX(), nodo.getUbicacion().getY()));
+			Punto punto = nodo.getUbicacion();
+			matriz.marcarVisitado(punto);
 			}else {
 				nodo=cola.getPrimerElementoNoVisitado();
 				  if(nodosDistintos(nodo, nodoDestino)){
@@ -200,7 +205,8 @@ public class CalculaCamino {
 		nuevoNodo.setDistanciaAcumulada(nodoOrigen.getDistanciaAcumulada()+(movimiento*multiplicador));
 		nuevoNodo.setDistanciaDestino(this.caminoDirecto(nuevoNodo, this.camino.getDestino()));
 		nuevoNodo.setNodoAnterior(nodoOrigen);
-		if (densidad != 4 && nodoVisitado(nuevoNodo)) {
+//		if (densidad != 4 && nodoVisitado(nuevoNodo)) {
+		if(densidad != 4 && !matriz.isVisitado(nuevoNodo.getUbicacion())){
 			vecNodo.add(nuevoNodo);
 		}
 		
@@ -209,20 +215,20 @@ public class CalculaCamino {
 	
 
 	
-	
-	private boolean nodoVisitado(Nodo nodo){
-		
-		for (Punto punto : puntosVisitados) {
-			
-			if (!nodosDistintos(nodo, new Nodo(punto))) {
-				return false;
-			}
-			
-		}
-		
-		return true;
-		
-	}
+//	
+//	private boolean nodoVisitado(Nodo nodo){
+//		
+//		for (Punto punto : puntosVisitados) {
+//			
+//			if (!nodosDistintos(nodo, new Nodo(punto))) {
+//				return false;
+//			}
+//			
+//		}
+//		
+//		return true;
+//		
+//	}
 
 	// no toma en cuenta obstaculos
 	private int caminoDirecto(Nodo origen, Nodo destino) {
