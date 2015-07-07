@@ -2,10 +2,11 @@ package desarrollo;
 
 import grafico.Punto;
 
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.Vector;
+
+import javax.swing.JOptionPane;
 
 import mapa.Camino;
 import mapa.Mapa;
@@ -20,8 +21,9 @@ public class CalculaCamino {
 	private Nodo nodoDestino;
 	int contador=0;
 	private ColaConPrioridad cola = new ColaConPrioridad();
-	private Set<Punto> puntosVisitados = new HashSet<Punto>();
-	private Matriz matriz = new Matriz();
+//	private Vector<Punto> puntosVisitados = new Vector<Punto>();
+	private int matrizPuntosVisitados[][] = new int [400][400];
+	
 	
 	public CalculaCamino(List<Punto> cmc, Camino camino) {
 		
@@ -33,26 +35,32 @@ public class CalculaCamino {
 		
 		nodoDestino = this.camino.getDestino();
 		
-		
 		this.caminoReferente = caminoDirecto(origen, destino);
 		
+		inicializarMatriz(matrizPuntosVisitados);
+		
+		matrizPuntosVisitados[origen.getUbicacion().getX()][origen.getUbicacion().getY()] = 1;
+		
+		
 		Nodo neoNodo = new Nodo(origen.getUbicacion());
-		neoNodo.setDistanciaAcumulada(0);
-		
-		//es el primer nodo por lo tanto es la misma distancia que la distancia minima
+		neoNodo.setDistanciaAcumulada(0);							//es el primer nodo por lo tanto es la misma distancia que la distancia minima
+
 		neoNodo.setDistanciaDestino(this.caminoReferente);
-		
-		
+				
 		Vector<Nodo> movimientosPosibles = movimientosPosibles(neoNodo);
 		
 		cola.acolarConjunto(movimientosPosibles);
 		
+		
+		
 		Nodo primerElemento = cola.getPrimerElementoNoVisitado();
 		primerElemento.setNodoVisitado(true);
-		
 //		puntosVisitados.add(new Punto(primerElemento.getUbicacion().getX(), primerElemento.getUbicacion().getY()));
-		Punto punto = new Punto(primerElemento.getUbicacion().getX(), primerElemento.getUbicacion().getY());
-		matriz.marcarVisitado(punto);
+		//tlbr
+		
+		 matrizPuntosVisitados[primerElemento.getUbicacion().getX()][primerElemento.getUbicacion().getY()] = 1;
+		
+		//fin tlbr
 		neoNodo.setNodoAnterior(null);
 		primerElemento.setNodoAnterior(neoNodo);
 		
@@ -60,40 +68,61 @@ public class CalculaCamino {
 
 	}
 
+
 	
+	private void inicializarMatriz(int[][] matriz) {
+		
+		for(int i = 0; i < 400; i++)
+			for(int j = 0; j < 400; j++)
+				matriz[i][j] = 0;
+		
+	}
+
+
+
 	public void caminar(Nodo nodo){
 		
 		
-		while (nodosDistintos(nodo, nodoDestino)) {
-			
-	
+		while (nodosDistintos(nodo, nodoDestino)) {	
 			
 			if(nodo.getDistancia() <= this.caminoReferente){
 				
-			Vector<Nodo> vectorMovimientosPosibles = movimientosPosibles(nodo);
-			ColaConPrioridad colaAux = new ColaConPrioridad();
-			colaAux.acolarConjunto(vectorMovimientosPosibles);
-			Nodo primerElementoNoVisitado = colaAux.getPrimerElementoNoVisitado();
-			cola.acolarConjunto(vectorMovimientosPosibles);
-			//ACA CAMINA
-			try{
-			nodo = new Nodo(primerElementoNoVisitado.getUbicacion());
-			}catch(NullPointerException e){
-				nodo=cola.getPrimerElemento();
-				e.printStackTrace();
+				Vector<Nodo> vectorMovimientosPosibles = movimientosPosibles(nodo);
 				
+				ColaConPrioridad colaAux = new ColaConPrioridad();
+				colaAux.acolarConjunto(vectorMovimientosPosibles);
+				
+				Nodo primerElementoNoVisitado = colaAux.getPrimerElementoNoVisitado();
+				cola.acolarConjunto(vectorMovimientosPosibles);
+				//ACA CAMINA
+				try{
+				nodo = new Nodo(primerElementoNoVisitado.getUbicacion());
+				}catch(NullPointerException e){
+					nodo=cola.getPrimerElemento();
+					e.printStackTrace();
+					
 			}
 			nodo = primerElementoNoVisitado;
 //			puntosVisitados.add(new Punto(nodo.getUbicacion().getX(), nodo.getUbicacion().getY()));
-			Punto punto = nodo.getUbicacion();
-			matriz.marcarVisitado(punto);
+			//tlbr
+			
+			matrizPuntosVisitados[nodo.getUbicacion().getX()][nodo.getUbicacion().getY()] = 1;			
+			
+			//fin tlbr
+			
+			
 			}else {
-				nodo=cola.getPrimerElementoNoVisitado();
-				  if(nodosDistintos(nodo, nodoDestino)){
-					     this.caminoReferente = nodo.getDistanciaDestino();
-					     Vector<Nodo> vectorMovimientosPosibles = movimientosPosibles(nodo);
-					     cola.acolarConjunto(vectorMovimientosPosibles);
-					    }
+				
+				//tlbr
+				
+				nodo = cola.getPrimerElementoNoVisitado();
+				if(nodosDistintos(nodo, nodoDestino)){
+					this.caminoReferente = nodo.getDistanciaDestino();
+					Vector<Nodo> vectorMovimientosPosibles = movimientosPosibles(nodo);
+					cola.acolarConjunto(vectorMovimientosPosibles);
+				}
+				
+				//fin tlbr
 				
 				
 			}
@@ -106,8 +135,6 @@ public class CalculaCamino {
 			this.cmc.add(nodo.getUbicacion());
 			nodo = nodo.getNodoAnterior();
 		}
-		
-		
 		
 		
 	}
@@ -179,8 +206,7 @@ public class CalculaCamino {
 
 	}
 
-	private void agregarAVector(int x, int y, Nodo nodoOrigen,
-			Vector<Nodo> vecNodo) {
+	private void agregarAVector(int x, int y, Nodo nodoOrigen, Vector<Nodo> vecNodo) {
 
 		Nodo nuevoNodo = new Nodo(new Punto(x, y));
 		int multiplicador =1;
@@ -198,15 +224,14 @@ public class CalculaCamino {
 		Mapa mapa = this.camino.getMapa();
 		int densidad = mapa.getDensidad(x, y);
 		densidad++;
-		multiplicador = densidad *100;
 		
 		
 		//aca carga los datos de distancia acumulada y distancia a destino re calculadas
-		nuevoNodo.setDistanciaAcumulada(nodoOrigen.getDistanciaAcumulada()+(movimiento*multiplicador));
+		nuevoNodo.setDistanciaAcumulada(nodoOrigen.getDistanciaAcumulada()+(movimiento*densidad));
 		nuevoNodo.setDistanciaDestino(this.caminoDirecto(nuevoNodo, this.camino.getDestino()));
 		nuevoNodo.setNodoAnterior(nodoOrigen);
-//		if (densidad != 4 && nodoVisitado(nuevoNodo)) {
-		if(densidad != 4 && !matriz.isVisitado(nuevoNodo.getUbicacion())){
+//		nose();
+		if (densidad != 4 && !nodoVisitado(nuevoNodo)) {
 			vecNodo.add(nuevoNodo);
 		}
 		
@@ -215,20 +240,14 @@ public class CalculaCamino {
 	
 
 	
-//	
-//	private boolean nodoVisitado(Nodo nodo){
-//		
-//		for (Punto punto : puntosVisitados) {
-//			
-//			if (!nodosDistintos(nodo, new Nodo(punto))) {
-//				return false;
-//			}
-//			
-//		}
-//		
-//		return true;
-//		
-//	}
+	
+	private boolean nodoVisitado(Nodo nodo){
+		
+		if(matrizPuntosVisitados[nodo.getUbicacion().getX()][nodo.getUbicacion().getY()] == 1)
+			return true;
+		return false;
+		
+	}
 
 	// no toma en cuenta obstaculos
 	private int caminoDirecto(Nodo origen, Nodo destino) {
